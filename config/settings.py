@@ -32,6 +32,8 @@ INSTALLED_APPS = [
     'whitenoise.runserver_nostatic',
     'social_django',
     'django_extensions',
+    'margincalculator.apps.MargincalculatorConfig',
+    'django.contrib.humanize',
 ]
 
 MIDDLEWARE = [

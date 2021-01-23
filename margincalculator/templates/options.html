@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block content %}
+
+    <form action="calculate-margin" method="POST">
+        {% csrf_token %}
+        <div class="row">
+
+            <input type="text" class="form-control text-center" name="option-type"
+                   value="{{ option_type }}" required hidden>
+
+            <div class="col">
+                <input type="number" class="form-control  text-center" id="email" placeholder="Quantity" name="quantity"
+                       required>
+                <p class="text-center">Qty</p>
+            </div>
+
+            <div class="col">
+                <input type="number" step=".01" class="form-control text-center" placeholder="Margin" name="margin"
+                       value="{{ value|default:0.25|floatformat:2 }}" required>
+                <p class="text-center">Margin</p>
+            </div>
+
+            {% for temp_stock in quote.quotes.quote %}
+                {% if temp_stock.type == 'stock' %}
+                    <div class="col">
+                        <input type="number" step=".01" class="form-control text-center" placeholder="Stock Price"
+                               value="{{ temp_stock.last|floatformat:2 }}" required name="stock-price">
+                        <p class="text-center">Stock Price</p>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            {% for temp_option in quote.quotes.quote %}
+                {% if temp_option.type == 'option' %}
+                    <div class="col">
+                        {% if temp_option.last != None %}
+                            <input type="number" step=".01" class="form-control text-center" placeholder="Option Price"
+                                   value="{{ temp_option.last|floatformat:2 }}" name="option-price">
+                        {% else %}
+                            <input type="number" step=".01" class="form-control text-center" placeholder="Option Price"
+                                   name="option-price"
+                                   value="{{ value|default:0|floatformat:2 }}" required name="option-price">
+                        {% endif %}
+                        <p class="text-center">Option Price</p>
+                    </div>
+
+                    <div class="col">
+                        <input type="number" step=".01" class="form-control text-center" placeholder="Strike Price"
+                               value="{{ temp_option.strike|floatformat:2 }}" required name="strike-price">
+                        <p class="text-center">Strike Price</p>
+                    </div>
+
+                    <div class="col">
+                        {% if temp_option.open_interest != None %}
+                            <input type="number" class="form-control text-center" name="open-interest"
+                                   value="{{ temp_option.open_interest }}" required>
+                        {% else %}
+                            <input type="number" class="form-control text-center" name="open-interest"
+                                   value="{{ value|default:0 }}" required>
+                        {% endif %}
+                        <p class="text-center">Open Interest</p>
+                    </div>
+
+                {% endif %}
+            {% endfor %}
+
+            <h3 class="text-center">Option Statistics</h3>
+            {% for temp_option in quote.quotes.quote %}
+                {% if temp_option.type == 'option' %}
+                    <h5 class="text-center"><em>{{ temp_option.description }}</em></h5>
+                    <input type="text" class="form-control text-center" name="option-description" value="{{ temp_option.description }}" hidden>
+                    <div class="table-responsive-lg">
+                        <table class="table table-striped table-hover text-center">
+                            <thead>
+                            <tr>
+                                <th scope="col">Bid</th>
+                                <th scope="col">Ask</th>
+                                <th scope="col">Volume</th>
+                                <th scope="col">Change Percentage</th>
+                                <th scope="col">Mid IV</th>
+                                <th scope="col">Delta</th>
+                                <th scope="col">Gamma</th>
+                                <th scope="col">Theta</th>
+                                <th scope="col">Vega</th>
+                                <th scope="col">Rho</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>{{ temp_option.bid|floatformat:2 }}</td>
+                                <input type="text" class="form-control text-center" name="option-bid" value="{{ temp_option.bid }}" hidden>
+                                <td>{{ temp_option.ask|floatformat:2 }}</td>
+                                <input type="text" class="form-control text-center" name="option-ask" value="{{ temp_option.ask }}" hidden>
+                                <td>{{ temp_option.volume }}</td>
+                                <input type="text" class="form-control text-center" name="option-volume" value="{{ temp_option.volume }}" hidden>
+                                <td>{{ temp_option.change }}</td>
+                                <input type="text" class="form-control text-center" name="option-change" value="{{ temp_option.change }}" hidden>
+                                <td>{{ temp_option.greeks.mid_iv }}</td>
+                                <input type="text" class="form-control text-center" name="option-mid-iv" value="{{ temp_option.greeks.mid_iv }}" hidden>
+                                <td>{{ temp_option.greeks.delta }}</td>
+                                <input type="text" class="form-control text-center" name="option-delta" value="{{ temp_option.greeks.delta }}" hidden>
+                                <td>{{ temp_option.greeks.gamma }}</td>
+                                <input type="text" class="form-control text-center" name="option-gamma" value="{{ temp_option.greeks.gamma }}" hidden>
+                                <td>{{ temp_option.greeks.theta }}</td>
+                                <input type="text" class="form-control text-center" name="option-theta" value="{{ temp_option.greeks.theta }}" hidden>
+                                <td>{{ temp_option.greeks.vega }}</td>
+                                <input type="text" class="form-control text-center" name="option-vega" value="{{ temp_option.greeks.vega }}" hidden>
+                                <td>{{ temp_option.greeks.rho }}</td>
+                                <input type="text" class="form-control text-center" name="option-rho" value="{{ temp_option.greeks.rho }}" hidden>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            {% endfor %}
+
+            <h3 class="text-center">Stock Statistics</h3>
+            {% for temp_stock in quote.quotes.quote %}
+                {% if temp_stock.type == 'stock' %}
+                    <h5 class="text-center"><em>{{ temp_stock.description }}</em></h5>
+                    <input type="text" class="form-control text-center" name="stock-description" value="{{ temp_stock.description }}" hidden>
+                    <div class="table-responsive-lg">
+                        <table class="table table-striped table-hover text-center">
+                            <thead>
+                            <tr>
+                                <th scope="col">Bid</th>
+                                <th scope="col">Ask</th>
+                                <th scope="col">Volume</th>
+                                <th scope="col">Stock Price</th>
+                                <th scope="col">Change Percentage</th>
+                            </tr>
+                            </thead>
+                            <tbody>
+                            <tr>
+                                <td>{{ temp_stock.bid|floatformat:2 }}</td>
+                                <input type="text" class="form-control text-center" name="stock-bid" value="{{ temp_stock.bid }}" hidden>
+                                <td>{{ temp_stock.ask|floatformat:2 }}</td>
+                                <input type="text" class="form-control text-center" name="stock-ask" value="{{ temp_stock.ask }}" hidden>
+                                <td>{{ temp_stock.volume }}</td>
+                                <input type="text" class="form-control text-center" name="stock-volume" value="{{ temp_stock.volume }}" hidden>
+                                <td>{{ temp_stock.last }}</td>
+                                <td>{{ temp_stock.change }}</td>
+                                <input type="text" class="form-control text-center" name="stock-change" value="{{ temp_stock.change }}" hidden>
+                            </tr>
+                            </tbody>
+                        </table>
+                    </div>
+                {% endif %}
+            {% endfor %}
+            <button class="button btn btn-secondary btn-lg btn-block mt-1 p-1" type="submit"><h3>Calculate Margin
+                Requirement</h3></button>
+        </div>
+    </form>
+
+{#    <h1 class="text-center">The Data</h1>#}
+{#    <div class="row">#}
+{#        <br>#}
+{#        {% for temp_option in quote.quotes.quote %}#}
+{#            {% if temp_option.type == 'option' %}#}
+{#                <div class="column">#}
+{#                    <ul>Symbol: {{ temp_option.symbol }}</ul>#}
+{#                    <ul>Description: {{ temp_option.description }}</ul>#}
+{#                    <ul>Exchange: {{ temp_option.exch }}</ul>#}
+{#                    <ul>Type: {{ temp_option.type|title }}</ul>#}
+{#                    <ul>Option Price: {{ temp_option.last }}</ul>#}
+{#                    <ul>Change: {{ temp_option.change }}</ul>#}
+{#                    <ul>Volume: {{ temp_option.volume }}</ul>#}
+{#                    <ul>Open: {{ temp_option.open }}</ul>#}
+{#                    <ul>High: {{ temp_option.high }}</ul>#}
+{#                    <ul>Low: {{ temp_option.low }}</ul>#}
+{#                    <ul>Close: {{ temp_option.close }}</ul>#}
+{#                    <ul>Bid: {{ temp_option.bid }}</ul>#}
+{#                    <ul>Ask: {{ temp_option.ask }}</ul>#}
+{#                    <ul>Underlying: {{ temp_option.underlying }}</ul>#}
+{#                    <ul>Strike: {{ temp_option.strike }}</ul>#}
+{#                    <br>#}
+{#                </div>#}
+{#                <div class="column">#}
+{#                    <ul>Delta: {{ temp_option.greeks.delta }}</ul>#}
+{#                    <ul>Gamma: {{ temp_option.greeks.gamma }}</ul>#}
+{#                    <ul>Theta: {{ temp_option.greeks.theta }}</ul>#}
+{#                    <ul>Vega: {{ temp_option.greeks.vega }}</ul>#}
+{#                    <ul>Rho: {{ temp_option.greeks.rho }}</ul>#}
+{#                    <ul>Phi: {{ temp_option.greeks.phi }}</ul>#}
+{#                    <ul>Bid IV: {{ temp_option.greeks.bid_iv }}</ul>#}
+{#                    <ul>Mid IV: {{ temp_option.greeks.mid_iv }}</ul>#}
+{#                    <ul>Ask IV: {{ temp_option.greeks.ask_iv }}</ul>#}
+{#                    <ul>SMV Vol: {{ temp_option.greeks.smv_vol }}</ul>#}
+{#                    <ul>Updated At: {{ temp_option.greeks.updated_at }}</ul>#}
+{#                    <ul>Change Percentage: {{ temp_option.change_percentage }}</ul>#}
+{#                    <ul>Average Volume: {{ temp_option.average_volume }}</ul>#}
+{#                    <ul>Last Volume: {{ temp_option.last_volume }}</ul>#}
+{#                    <ul>Trade Date: {{ temp_option.trade_date }}</ul>#}
+{#                    <br>#}
+{#                </div>#}
+{#                <div class="column">#}
+{#                    <ul>Previous Close: {{ temp_option.prevclose }}</ul>#}
+{#                    <ul>Week 52 High: {{ temp_option.week_52_high }}</ul>#}
+{#                    <ul>Week 52 Low: {{ temp_option.week_52_low }}</ul>#}
+{#                    <ul>Bid Size: {{ temp_option.bidsize }}</ul>#}
+{#                    <ul>Bid Exchange: {{ temp_option.bidexch }}</ul>#}
+{#                    <ul>Bid Date: {{ temp_option.bid_date }}</ul>#}
+{#                    <ul>Ask Size: {{ temp_option.asksize }}</ul>#}
+{#                    <ul>Ask Exchange: {{ temp_option.askexch }}</ul>#}
+{#                    <ul>Ask Date: {{ temp_option.ask_date }}</ul>#}
+{#                    <ul>Open Interest: {{ temp_option.open_interest }}</ul>#}
+{#                    <ul>Contract Size: {{ temp_option.contract_size }}</ul>#}
+{#                    <ul>Expiration Date: {{ temp_option.expiration_date }}</ul>#}
+{#                    <ul>Expiration Type: {{ temp_option.expiration_type|title }}</ul>#}
+{#                    <ul>Option Type: {{ temp_option.option_type|title }}</ul>#}
+{#                    <ul>Root Symbol: {{ temp_option.root_symbol }}</ul>#}
+{#                    <br>#}
+{#                </div>#}
+{#            {% endif %}#}
+{#        {% endfor %}#}
+{#        <hr>#}
+{#        <h3 class="text-center">Stock Information</h3>#}
+{#        <br><br>#}
+{#        {% for temp_stock in quote.quotes.quote %}#}
+{#            {% if temp_stock.type == 'stock' %}#}
+{#                <div class="column">#}
+{#                    <ul>Symbol: {{ temp_stock.symbol }}</ul>#}
+{#                    <ul>Description: {{ temp_stock.description }}</ul>#}
+{#                    <ul>Exchange: {{ temp_stock.exch }}</ul>#}
+{#                    <ul>Type: {{ temp_stock.type }}</ul>#}
+{#                    <ul>Stock Price: {{ temp_stock.last }}</ul>#}
+{#                    <ul>Change: {{ temp_stock.change }}</ul>#}
+{#                    <ul>Volume: {{ temp_stock.volume }}</ul>#}
+{#                    <ul>Open: {{ temp_stock.open }}</ul>#}
+{#                    <ul>High: {{ temp_stock.high }}</ul>#}
+{#                </div>#}
+{#                <div class="column">#}
+{#                    <ul>Low: {{ temp_stock.low }}</ul>#}
+{#                    <ul>Close: {{ temp_stock.close }}</ul>#}
+{#                    <ul>Bid: {{ temp_stock.bid }}</ul>#}
+{#                    <ul>Ask: {{ temp_stock.ask }}</ul>#}
+{#                    <ul>Change Percentage: {{ temp_stock.change_percentage }}</ul>#}
+{#                    <ul>Average Volume: {{ temp_stock.average_volume }}</ul>#}
+{#                    <ul>Last Volume: {{ temp_stock.last_volume }}</ul>#}
+{#                    <ul>Trade Date: {{ temp_stock.trade_date }}</ul>#}
+{#                    <ul>Previous Close: {{ temp_stock.prevclose }}</ul>#}
+{#                </div>#}
+{#                <div class="column">#}
+{#                    <ul>Week 52 High: {{ temp_stock.week_52_high }}</ul>#}
+{#                    <ul>Week 52 Low: {{ temp_stock.week_52_low }}</ul>#}
+{#                    <ul>Bid Size: {{ temp_stock.bidsize }}</ul>#}
+{#                    <ul>Bid Exchange: {{ temp_stock.bidexch }}</ul>#}
+{#                    <ul>Bid Date: {{ temp_stock.bid_date }}</ul>#}
+{#                    <ul>Ask Size: {{ temp_stock.asksize }}</ul>#}
+{#                    <ul>Ask Exchange: {{ temp_stock.askexch }}</ul>#}
+{#                    <ul>Ask Date: {{ temp_stock.ask_date }}</ul>#}
+{#                    <ul>Root Symbol: {{ temp_stock.root_symbols }}</ul>#}
+{#                </div>#}
+{#            {% endif %}#}
+{#        {% endfor %}#}
+{#    </div>#}
+{% endblock %}

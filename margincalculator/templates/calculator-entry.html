@@ -1,0 +1,22 @@
+{% extends "base.html" %}
+
+{% block title %}Calculator Entry{% endblock %}
+
+
+{% block content %}
+    <form action="{% url 'options' %}" class="inline" method="POST">
+        {% csrf_token %}
+        <div class="container">
+            <div class="input-group col-sm-7 input-group-lg">
+                <button class="button btn btn-secondary btn-block" type="submit"><h4>Lookup Symbol</h4></button>
+                <input aria-label="Search"
+                       class="form-control"
+                       name="option"
+                       placeholder="Enter Trade Information..."
+                       required type="search">
+            </div>
+        </div>
+    </form>
+{% endblock %}
+
+
