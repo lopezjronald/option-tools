@@ -1,0 +1,19 @@
+[[source]]
+url = "https://pypi.org/simple"
+verify_ssl = true
+name = "pypi"
+
+[packages]
+django = "*"
+pillow = "*"
+social-auth-app-django = "*"
+django-extensions = "*"
+gunicorn = "*"
+psycopg2-binary = "*"
+whitenoise = "==5.1.0"
+environs = {version = "==8.0.0", extras = ["django"]}
+
+[dev-packages]
+
+[requires]
+python_version = "3.9"
